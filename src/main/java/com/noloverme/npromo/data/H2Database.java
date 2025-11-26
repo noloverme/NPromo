@@ -23,6 +23,7 @@ public class H2Database implements Database {
     public void init() throws SQLException {
         File dbFile = new File(plugin.getDataFolder(), "data.db");
         HikariConfig config = new HikariConfig();
+        config.setDriverClassName("org.h2.Driver");
         config.setJdbcUrl("jdbc:h2:" + dbFile.getAbsolutePath());
         config.setUsername("sa");
         config.setPassword("");

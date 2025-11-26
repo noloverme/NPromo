@@ -1,8 +1,7 @@
-# NPromo messages (Russian)
-
 prefix: "&8[&6NPromo&8] "
 
 reload: "&aКонфигурация успешно перезагружена."
+must-be-player: "&7Ты не игрок."
 no-permission: "&cУ вас нет прав для выполнения этой команды."
 player-not-found: "&cИгрок не найден."
 code-not-found: "&cПромокод не найден."

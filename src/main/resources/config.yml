@@ -1,9 +1,7 @@
-# NPromo configuration
-
-# Storage type: H2 (local) or MYSQL
+# Тип базы данных: H2 или MYSQL
 storage:
   type: H2
-  # MySQL settings (if type is MYSQL)
+  # MySQL настройки, если "type" стоит "MYSQL"
   mysql:
     host: "localhost"
     port: 3306
@@ -11,12 +9,12 @@ storage:
     username: "root"
     password: ""
 
-# Promo code mode: UNLIMITED or MEDIA
-# UNLIMITED: Players can activate any number of codes, but each code only once.
-# MEDIA: Players can activate only one code, one time.
+# Режим промокода: UNLIMITED или MEDIA
+# UNLIMITED: Игроки могут активировать любое количество кодов, но каждый код только один раз.
+# MEDIA: Игроки могут активировать только один код, один раз.
 mode: UNLIMITED
 
-# MEDIA mode settings
+# Настройки режима "MEDIA"
 media-settings:
-  # Check IP address to prevent multiple activations from the same IP
+  # Проверяет айпи, если этот айпи активировал то не дает активировать.
   check-ip: true
