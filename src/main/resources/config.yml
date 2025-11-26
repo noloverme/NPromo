@@ -1,0 +1,22 @@
+# NPromo configuration
+
+# Storage type: H2 (local) or MYSQL
+storage:
+  type: H2
+  # MySQL settings (if type is MYSQL)
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "npromo"
+    username: "root"
+    password: ""
+
+# Promo code mode: UNLIMITED or MEDIA
+# UNLIMITED: Players can activate any number of codes, but each code only once.
+# MEDIA: Players can activate only one code, one time.
+mode: UNLIMITED
+
+# MEDIA mode settings
+media-settings:
+  # Check IP address to prevent multiple activations from the same IP
+  check-ip: true

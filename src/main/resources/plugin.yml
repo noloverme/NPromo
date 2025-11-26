@@ -1,0 +1,22 @@
+name: NPromo
+version: ${project.version}
+main: com.noloverme.npromo.NPromo
+api-version: 1.16
+authors: [ Noloverme ]
+description: Promo code plugin
+softdepend: [ PlaceholderAPI ]
+
+commands:
+  ncode:
+    description: Activate a promo code.
+    usage: "/ncode <code>"
+    aliases: [ code, promo, promocode ]
+  ncodes:
+    description: Manage promo codes.
+    usage: "/ncodes <reload|check|statspromo>"
+    permission: ncodes.admin
+
+permissions:
+  ncodes.admin:
+    description: Access to all NPromo admin commands.
+    default: op

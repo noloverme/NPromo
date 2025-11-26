@@ -1,0 +1,30 @@
+# NPromo messages (Russian)
+
+prefix: "&8[&6NPromo&8] "
+
+reload: "&aКонфигурация успешно перезагружена."
+no-permission: "&cУ вас нет прав для выполнения этой команды."
+player-not-found: "&cИгрок не найден."
+code-not-found: "&cПромокод не найден."
+code-activated: "&aВы успешно активировали промокод &6{code}&a."
+code-already-activated: "&cВы уже активировали этот промокод."
+media-code-already-activated: "&cВы уже активировали промокод."
+invalid-code: "&cНеверный промокод."
+usage: "&cИспользование: &6{usage}"
+
+check:
+  header: "&6Промокоды, активированные игроком {player}:"
+  line: "&e- {code}"
+  no-codes: "&cИгрок {player} не активировал ни одного промокода."
+
+stats:
+  header: "&6Статистика по промокоду {code}:"
+  activations: "&eВсего активаций: &a{count}"
+
+import:
+  success: "&aДанные успешно импортированы из файла {file}."
+  fail: "&cНе удалось импортировать данные из файла {file}."
+
+export:
+  success: "&aДанные успешно экспортированы в файл {file}."
+  fail: "&cНе удалось экспортировать данные в файл {file}."
