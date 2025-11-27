@@ -5,6 +5,8 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.ExecutionException;
+
 public class PlaceholderAPIHook extends PlaceholderExpansion {
 
     private final NPromo plugin;
@@ -37,8 +39,13 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
     public String onRequest(OfflinePlayer player, @NotNull String params) {
         if (params.startsWith("activations_")) {
             String code = params.substring("activations_".length());
-            if (plugin.getCodes().isConfigurationSection(code)) {
-                return String.valueOf(plugin.getDatabase().getCodeActivations(code));
+            if (plugin.getCodeManager().codeExistsInConfig(code)) {
+                try {
+                    return String.valueOf(plugin.getDatabase().getCodeActivations(code).get());
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                    return "0";
+                }
             } else {
                 return "0";
             }

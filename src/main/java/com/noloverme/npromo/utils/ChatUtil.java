@@ -13,42 +13,49 @@ import java.util.regex.Pattern;
 public class ChatUtil {
 
     private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
-    private static FileConfiguration messagesConfig;
+    private final NPromo plugin;
+    private FileConfiguration messagesConfig;
+    private String prefix;
 
-    public static void reload() {
-        File messagesFile = new File(NPromo.getInstance().getDataFolder(), "messages.yml");
-        if (!messagesFile.exists()) {
-            NPromo.getInstance().saveResource("messages.yml", false);
-        }
-        messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
+    public ChatUtil(NPromo plugin) {
+        this.plugin = plugin;
     }
 
-    public static String color(String message) {
+    public void reload() {
+        File messagesFile = new File(plugin.getDataFolder(), "messages.yml");
+        if (!messagesFile.exists()) {
+            plugin.saveResource("messages.yml", false);
+        }
+        this.messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
+        this.prefix = color(this.messagesConfig.getString("prefix", ""));
+    }
+
+    public String color(String message) {
         if (message == null) {
             return "";
         }
-        
+
         Matcher matcher = HEX_PATTERN.matcher(message);
         StringBuffer buffer = new StringBuffer(message.length() + 4 * 8);
         while (matcher.find()) {
             String group = matcher.group(1);
             matcher.appendReplacement(buffer, net.md_5.bungee.api.ChatColor.of("#" + group).toString());
         }
-        
+
         return ChatColor.translateAlternateColorCodes('&', matcher.appendTail(buffer).toString());
     }
 
-    public static void sendMessage(CommandSender sender, String path, String... replacements) {
-        if (messagesConfig == null) {
+    public void sendMessage(CommandSender sender, String path, String... replacements) {
+        if (this.messagesConfig == null) {
             sender.sendMessage(ChatColor.RED + "Messages configuration is not loaded.");
             return;
         }
-        String message = messagesConfig.getString(path, "&cMessage not found: " + path);
+        String message = this.messagesConfig.getString(path, "&cMessage not found: " + path);
         for (int i = 0; i < replacements.length; i += 2) {
             if (i + 1 < replacements.length) {
                 message = message.replace(replacements[i], replacements[i + 1]);
             }
         }
-        sender.sendMessage(color(messagesConfig.getString("prefix", "") + message));
+        sender.sendMessage(this.prefix + color(message));
     }
 }

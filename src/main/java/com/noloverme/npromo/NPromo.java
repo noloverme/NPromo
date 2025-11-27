@@ -16,20 +16,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.Objects;
 
 public final class NPromo extends JavaPlugin {
 
-    private static NPromo instance;
     private CodeManager codeManager;
     private Database database;
     private FileConfiguration codesConfig;
+    private ChatUtil chatUtil;
 
     @Override
     public void onEnable() {
-        instance = this;
-
         if (!isPaper() || !isCompatibleVersion()) {
-            getLogger().severe("Плагин не был инициализирован из-за возможной несовместимости версий. Пожалуйста, используйте ядро Paper или PurPur и версию 1.16+");
+            getLogger().severe("Plugin not initialized due to possible version incompatibility. Please use Paper or PurPur and version 1.16+");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -38,43 +37,57 @@ public final class NPromo extends JavaPlugin {
         saveResource("messages.yml", false);
         saveResource("codes.yml", false);
         reloadCodes();
-        ChatUtil.reload();
 
-        try {
-            setupDatabase();
-        } catch (SQLException e) {
-            getLogger().severe("Не удалось подключиться к базе данных! Отключение плагина.");
-            e.printStackTrace();
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
+        this.chatUtil = new ChatUtil(this);
+        this.chatUtil.reload();
 
-        codeManager = new CodeManager(this, database);
-
-        PluginCommand ncodeCommand = getCommand("ncode");
-        if (ncodeCommand != null) {
-            ncodeCommand.setExecutor(new NCodeCommand(this));
-        }
-
-        PluginCommand ncodesCommand = getCommand("ncodes");
-        if (ncodesCommand != null) {
-            ncodesCommand.setExecutor(new NCodesCommand(this));
-            ncodesCommand.setTabCompleter(new NCodesCommand(this));
-        }
-
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new PlaceholderAPIHook(this).register();
-        }
-
-        getLogger().info("NPromo has been enabled!");
+        connectToDatabase();
     }
 
     @Override
     public void onDisable() {
-        if (database != null) {
-            database.close();
+        if (this.database != null) {
+            this.database.close();
         }
         getLogger().info("NPromo has been disabled!");
+    }
+
+    private void connectToDatabase() {
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            try {
+                setupDatabase();
+                Bukkit.getScheduler().runTask(this, this::onDatabaseConnected);
+            } catch (SQLException e) {
+                getLogger().severe("Could not connect to the database! Disabling plugin.");
+                e.printStackTrace();
+                Bukkit.getScheduler().runTask(this, () -> getServer().getPluginManager().disablePlugin(this));
+            }
+        });
+    }
+
+    private void onDatabaseConnected() {
+        this.codeManager = new CodeManager(this, this.database);
+        registerCommands();
+        registerHooks();
+        getLogger().info("NPromo has been enabled!");
+    }
+
+    private void registerCommands() {
+        PluginCommand ncodeCommand = getCommand("ncode");
+        Objects.requireNonNull(ncodeCommand, "Command 'ncode' is not registered in plugin.yml");
+        ncodeCommand.setExecutor(new NCodeCommand(this));
+
+        PluginCommand ncodesCommand = getCommand("ncodes");
+        Objects.requireNonNull(ncodesCommand, "Command 'ncodes' is not registered in plugin.yml");
+        NCodesCommand commandExecutor = new NCodesCommand(this);
+        ncodesCommand.setExecutor(commandExecutor);
+        ncodesCommand.setTabCompleter(commandExecutor);
+    }
+
+    private void registerHooks() {
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            new PlaceholderAPIHook(this).register();
+        }
     }
 
     private boolean isPaper() {
@@ -87,35 +100,30 @@ public final class NPromo extends JavaPlugin {
     }
 
     private boolean isCompatibleVersion() {
-        String version = Bukkit.getServer().getBukkitVersion();
-        return version.matches("1\\.(1[6-9]|[2-9][0-9])(\\..*)?");
+        return Bukkit.getServer().getBukkitVersion().matches("1\\.(1[6-9]|[2-9][0-9])(\\..*)?");
     }
 
     private void setupDatabase() throws SQLException {
         String storageType = getConfig().getString("storage.type", "H2");
-        if (storageType.equalsIgnoreCase("MYSQL")) {
-            database = new MySQLDatabase(this);
+        if ("MYSQL".equalsIgnoreCase(storageType)) {
+            this.database = new MySQLDatabase(this);
         } else {
-            database = new H2Database(this);
+            this.database = new H2Database(this);
         }
-        database.init();
+        this.database.init();
     }
 
-    public void reload() {
+    public void reloadPlugin() {
         reloadConfig();
         saveResource("messages.yml", false);
-        ChatUtil.reload();
+        this.chatUtil.reload();
         reloadCodes();
-        if (database != null) {
-            database.close();
+
+        if (this.database != null) {
+            this.database.close();
         }
-        try {
-            setupDatabase();
-            codeManager = new CodeManager(this, database);
-        } catch (SQLException e) {
-            getLogger().severe("Не удалось переподключиться к базе данных во время перезагрузки!");
-            e.printStackTrace();
-        }
+
+        connectToDatabase();
     }
 
     public void reloadCodes() {
@@ -123,11 +131,7 @@ public final class NPromo extends JavaPlugin {
         if (!codesFile.exists()) {
             saveResource("codes.yml", false);
         }
-        codesConfig = YamlConfiguration.loadConfiguration(codesFile);
-    }
-
-    public static NPromo getInstance() {
-        return instance;
+        this.codesConfig = YamlConfiguration.loadConfiguration(codesFile);
     }
 
     public CodeManager getCodeManager() {
@@ -140,5 +144,9 @@ public final class NPromo extends JavaPlugin {
 
     public FileConfiguration getCodes() {
         return codesConfig;
+    }
+
+    public ChatUtil getChatUtil() {
+        return chatUtil;
     }
 }

@@ -1,12 +1,11 @@
 package com.noloverme.npromo.commands;
 
 import com.noloverme.npromo.NPromo;
-import com.noloverme.npromo.managers.CodeManager;
-import com.noloverme.npromo.utils.ChatUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class NCodeCommand implements CommandExecutor {
 
@@ -17,23 +16,22 @@ public class NCodeCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player)) {
-            ChatUtil.sendMessage(sender, "must-be-player");
+            this.plugin.getChatUtil().sendMessage(sender, "must-be-player");
             return true;
         }
 
         if (args.length != 1) {
-            ChatUtil.sendMessage(sender, "usage", "{usage}", "/ncode <code>");
+            this.plugin.getChatUtil().sendMessage(sender, "usage", "{usage}", "/ncode <code>");
             return true;
         }
 
         Player player = (Player) sender;
         String code = args[0];
-        CodeManager codeManager = plugin.getCodeManager();
 
-        codeManager.activateCode(player, code);
-        
+        this.plugin.getCodeManager().activateCode(player, code);
+
         return true;
     }
 }
